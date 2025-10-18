@@ -1,104 +1,92 @@
-import { MongoClient } from 'mongodb'
-import { v4 as uuidv4 } from 'uuid'
-import { NextResponse } from 'next/server'
+import { NextResponse } from 'next/server';
+import { getVisionModel, getTextModel } from '@/lib/gemini';
 
-// MongoDB connection
-let client
-let db
+// Handle CORS
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
 
-async function connectToMongo() {
-  if (!client) {
-    client = new MongoClient(process.env.MONGO_URL)
-    await client.connect()
-    db = client.db(process.env.DB_NAME)
-  }
-  return db
-}
-
-// Helper function to handle CORS
-function handleCORS(response) {
-  response.headers.set('Access-Control-Allow-Origin', process.env.CORS_ORIGINS || '*')
-  response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-  response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization')
-  response.headers.set('Access-Control-Allow-Credentials', 'true')
-  return response
-}
-
-// OPTIONS handler for CORS
 export async function OPTIONS() {
-  return handleCORS(new NextResponse(null, { status: 200 }))
+  return NextResponse.json({}, { headers: corsHeaders });
 }
 
-// Route handler function
-async function handleRoute(request, { params }) {
-  const { path = [] } = params
-  const route = `/${path.join('/')}`
-  const method = request.method
-
+// OCR + Translation API
+export async function POST(request) {
   try {
-    const db = await connectToMongo()
+    const { pathname } = new URL(request.url);
 
-    // Root endpoint - GET /api/root (since /api/ is not accessible with catch-all)
-    if (route === '/root' && method === 'GET') {
-      return handleCORS(NextResponse.json({ message: "Hello World" }))
-    }
-    // Root endpoint - GET /api/root (since /api/ is not accessible with catch-all)
-    if (route === '/' && method === 'GET') {
-      return handleCORS(NextResponse.json({ message: "Hello World" }))
-    }
+    // Extract and translate endpoint
+    if (pathname.includes('/extract-translate')) {
+      const formData = await request.formData();
+      const imageFile = formData.get('image');
+      const targetLanguage = formData.get('targetLanguage') || 'English';
 
-    // Status endpoints - POST /api/status
-    if (route === '/status' && method === 'POST') {
-      const body = await request.json()
-      
-      if (!body.client_name) {
-        return handleCORS(NextResponse.json(
-          { error: "client_name is required" }, 
-          { status: 400 }
-        ))
+      if (!imageFile) {
+        return NextResponse.json(
+          { error: 'Image file is required' },
+          { status: 400, headers: corsHeaders }
+        );
       }
 
-      const statusObj = {
-        id: uuidv4(),
-        client_name: body.client_name,
-        timestamp: new Date()
-      }
+      // Convert image to base64
+      const imageBuffer = await imageFile.arrayBuffer();
+      const base64Image = Buffer.from(imageBuffer).toString('base64');
+      const mimeType = imageFile.type;
 
-      await db.collection('status_checks').insertOne(statusObj)
-      return handleCORS(NextResponse.json(statusObj))
-    }
-
-    // Status endpoints - GET /api/status
-    if (route === '/status' && method === 'GET') {
-      const statusChecks = await db.collection('status_checks')
-        .find({})
-        .limit(1000)
-        .toArray()
-
-      // Remove MongoDB's _id field from response
-      const cleanedStatusChecks = statusChecks.map(({ _id, ...rest }) => rest)
+      // Step 1: Extract text using Gemini Vision
+      const visionModel = getVisionModel();
       
-      return handleCORS(NextResponse.json(cleanedStatusChecks))
+      const ocrPrompt = `Extract all text from this image. The image may contain text in Indian regional languages like Odia, Bengali, Tamil, Telugu, Malayalam, Kannada, Gujarati, Marathi, or other languages. Please extract ALL text exactly as it appears in the image, maintaining the original language. Return only the extracted text without any additional commentary.`;
+
+      const ocrResult = await visionModel.generateContent([
+        {
+          inlineData: {
+            mimeType,
+            data: base64Image,
+          },
+        },
+        ocrPrompt,
+      ]);
+
+      const extractedText = ocrResult.response.text();
+
+      // Step 2: Translate the extracted text
+      const textModel = getTextModel();
+      
+      const translationPrompt = `Translate the following text to ${targetLanguage}. Preserve the meaning and context accurately. If the text is already in ${targetLanguage}, just return it as is. Only return the translated text without any additional commentary or explanations.\n\nText to translate:\n${extractedText}`;
+
+      const translationResult = await textModel.generateContent(translationPrompt);
+      const translatedText = translationResult.response.text();
+
+      return NextResponse.json(
+        {
+          success: true,
+          extractedText,
+          translatedText,
+          targetLanguage,
+        },
+        { headers: corsHeaders }
+      );
     }
 
-    // Route not found
-    return handleCORS(NextResponse.json(
-      { error: `Route ${route} not found` }, 
-      { status: 404 }
-    ))
-
+    return NextResponse.json(
+      { error: 'Endpoint not found' },
+      { status: 404, headers: corsHeaders }
+    );
   } catch (error) {
-    console.error('API Error:', error)
-    return handleCORS(NextResponse.json(
-      { error: "Internal server error" }, 
-      { status: 500 }
-    ))
+    console.error('API Error:', error);
+    return NextResponse.json(
+      { error: error.message || 'Internal server error' },
+      { status: 500, headers: corsHeaders }
+    );
   }
 }
 
-// Export all HTTP methods
-export const GET = handleRoute
-export const POST = handleRoute
-export const PUT = handleRoute
-export const DELETE = handleRoute
-export const PATCH = handleRoute
+export async function GET(request) {
+  return NextResponse.json(
+    { message: 'Scriptly API is running', status: 'ok' },
+    { headers: corsHeaders }
+  );
+}
