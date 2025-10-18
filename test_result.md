@@ -209,11 +209,14 @@ test_plan:
   current_focus:
     - "Gemini Vision API integration for OCR"
     - "Gemini Translation API"
-    - "API health check endpoint"
-  stuck_tasks: []
+  stuck_tasks:
+    - "Gemini Vision API integration for OCR"
+    - "Gemini Translation API"
   test_all: false
   test_priority: "high_first"
 
 agent_communication:
   - agent: "main"
     message: "Initial implementation complete. Using Gemini AI (gemini-1.5-flash) with Emergent LLM Key for both OCR and translation. Need to test the core OCR + Translation flow with Indian regional language images. API endpoint: POST /api/extract-translate. Please test with various Indian language images (Bengali, Tamil, Odia, etc.)."
+  - agent: "testing"
+    message: "CRITICAL AUTHENTICATION ISSUE FOUND: The API key format 'sk-emergent-9B57c06574f5073745' is invalid for Google Gemini API. Gemini requires API keys starting with 'AIza' prefix. All OCR and translation functionality fails due to this authentication error. The endpoint implementation is correct - tested error handling (✅ working) and health check (✅ working). Need valid Gemini API key to proceed with core functionality testing."
