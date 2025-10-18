@@ -63,7 +63,7 @@ def create_test_image_with_text(text, language="Hindi", width=400, height=200):
 
 def test_api_health_check():
     """Test the API health check endpoint"""
-    print("\n=== Testing API Health Check ===")
+    print("\n=== Testing Next.js API Health Check ===")
     try:
         response = requests.get(f"{API_BASE}", timeout=30)
         print(f"Status Code: {response.status_code}")
@@ -72,17 +72,41 @@ def test_api_health_check():
         if response.status_code == 200:
             data = response.json()
             if data.get('status') == 'ok':
-                print("✅ API Health Check: PASSED")
+                print("✅ Next.js API Health Check: PASSED")
                 return True
             else:
-                print("❌ API Health Check: Invalid response format")
+                print("❌ Next.js API Health Check: Invalid response format")
                 return False
         else:
-            print(f"❌ API Health Check: Failed with status {response.status_code}")
+            print(f"❌ Next.js API Health Check: Failed with status {response.status_code}")
             return False
             
     except Exception as e:
-        print(f"❌ API Health Check: Exception - {e}")
+        print(f"❌ Next.js API Health Check: Exception - {e}")
+        return False
+
+def test_python_service_health():
+    """Test the Python Gemini service health check endpoint"""
+    print("\n=== Testing Python Service Health Check ===")
+    try:
+        response = requests.get("http://localhost:8000/health", timeout=30)
+        print(f"Status Code: {response.status_code}")
+        print(f"Response: {response.json()}")
+        
+        if response.status_code == 200:
+            data = response.json()
+            if data.get('status') == 'ok' and 'Python Gemini Service' in data.get('message', ''):
+                print("✅ Python Service Health Check: PASSED")
+                return True
+            else:
+                print("❌ Python Service Health Check: Invalid response format")
+                return False
+        else:
+            print(f"❌ Python Service Health Check: Failed with status {response.status_code}")
+            return False
+            
+    except Exception as e:
+        print(f"❌ Python Service Health Check: Exception - {e}")
         return False
 
 def test_ocr_translation_endpoint():
