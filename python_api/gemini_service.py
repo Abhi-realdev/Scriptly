@@ -83,7 +83,7 @@ async def translate(request: TextRequest):
             api_key=API_KEY,
             session_id=f"translate-session-{hash(request.text[:100])}",
             system_message="You are a helpful translation assistant."
-        ).with_model("gemini", "gemini-1.5-flash")
+        ).with_model("gemini", "gemini-1.5-flash-002")
         
         prompt = f"Translate the following text to {request.target_language}. Preserve the meaning and context accurately. If the text is already in {request.target_language}, just return it as is. Only return the translated text without any additional commentary or explanations.\n\nText to translate:\n{request.text}"
         
