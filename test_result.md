@@ -107,11 +107,11 @@ user_problem_statement: "Build Scriptly - a web app for uploading images contain
 backend:
   - task: "Gemini Vision API integration for OCR"
     implemented: true
-    working: false
+    working: "NA"
     file: "/app/app/api/[[...path]]/route.js"
     stuck_count: 1
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
@@ -119,14 +119,17 @@ backend:
       - working: false
         agent: "testing"
         comment: "CRITICAL ISSUE: API key format is invalid. Current key 'sk-emergent-9B57c06574f5073745' is not valid for Google Gemini API. Gemini API keys must start with 'AIza' prefix, not 'sk-emergent'. All OCR tests failed with 400 Bad Request - API key not valid. The endpoint structure and implementation are correct, but authentication fails due to wrong API key format."
+      - working: "NA"
+        agent: "main"
+        comment: "MAJOR REFACTOR: Created Python FastAPI microservice (/app/python_api/gemini_service.py) using emergentintegrations library which properly supports Emergent LLM Key. Next.js now proxies requests to Python service at localhost:8000. Using gemini-1.5-flash model. Ready for retesting."
   
   - task: "Gemini Translation API"
     implemented: true
-    working: false
+    working: "NA"
     file: "/app/app/api/[[...path]]/route.js"
     stuck_count: 1
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
@@ -134,6 +137,9 @@ backend:
       - working: false
         agent: "testing"
         comment: "CRITICAL ISSUE: Same API key authentication problem affects translation. Cannot test translation functionality because OCR step fails first due to invalid API key format. Translation logic appears correctly implemented but blocked by authentication issue."
+      - working: "NA"
+        agent: "main"
+        comment: "Now handled by Python FastAPI service using emergentintegrations which supports Emergent LLM Key. Translation happens after OCR in the same endpoint. Ready for retesting."
   
   - task: "API health check endpoint"
     implemented: true
@@ -149,6 +155,18 @@ backend:
       - working: true
         agent: "testing"
         comment: "Health check endpoint working correctly. Returns proper JSON response with status 'ok' and message 'Scriptly API is running'. No authentication required for this endpoint."
+  
+  - task: "Python Gemini microservice"
+    implemented: true
+    working: "NA"
+    file: "/app/python_api/gemini_service.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Created Python FastAPI service that uses emergentintegrations library with Emergent LLM Key. Endpoints: GET /health, POST /ocr-translate, POST /translate. Runs on localhost:8000. Uses gemini-1.5-flash model."
 
 frontend:
   - task: "Image upload with drag & drop"
