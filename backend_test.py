@@ -258,15 +258,19 @@ def main():
     
     all_results = []
     
-    # Test 1: API Health Check
+    # Test 1: Next.js API Health Check
     health_result = test_api_health_check()
     all_results.append(health_result)
     
-    # Test 2: OCR + Translation Endpoint
+    # Test 2: Python Service Health Check
+    python_health_result = test_python_service_health()
+    all_results.append(python_health_result)
+    
+    # Test 3: OCR + Translation Endpoint
     ocr_results = test_ocr_translation_endpoint()
     all_results.extend(ocr_results)
     
-    # Test 3: Error Handling
+    # Test 4: Error Handling
     error_results = test_error_handling()
     all_results.extend(error_results)
     
