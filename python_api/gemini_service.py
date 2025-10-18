@@ -41,7 +41,7 @@ async def ocr_translate(request: OCRRequest):
             api_key=API_KEY,
             session_id=f"ocr-session-{hash(request.image_base64[:100])}",
             system_message="You are a helpful assistant specialized in extracting text from Indian regional languages."
-        ).with_model("gemini", "gemini-1.5-flash")
+        ).with_model("gemini", "gemini-1.5-flash-002")
         
         # Create image content
         image_content = ImageContent(image_base64=request.image_base64)
