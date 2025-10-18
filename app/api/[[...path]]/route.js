@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getVisionModel, getTextModel } from '@/lib/gemini';
+import { analyzeImageWithGemini, translateWithGemini } from '@/lib/gemini';
 
 // Handle CORS
 const corsHeaders = {
@@ -36,29 +36,12 @@ export async function POST(request) {
       const mimeType = imageFile.type;
 
       // Step 1: Extract text using Gemini Vision
-      const visionModel = getVisionModel();
-      
       const ocrPrompt = `Extract all text from this image. The image may contain text in Indian regional languages like Odia, Bengali, Tamil, Telugu, Malayalam, Kannada, Gujarati, Marathi, or other languages. Please extract ALL text exactly as it appears in the image, maintaining the original language. Return only the extracted text without any additional commentary.`;
 
-      const ocrResult = await visionModel.generateContent([
-        {
-          inlineData: {
-            mimeType,
-            data: base64Image,
-          },
-        },
-        ocrPrompt,
-      ]);
-
-      const extractedText = ocrResult.response.text();
+      const extractedText = await analyzeImageWithGemini(base64Image, mimeType, ocrPrompt);
 
       // Step 2: Translate the extracted text
-      const textModel = getTextModel();
-      
-      const translationPrompt = `Translate the following text to ${targetLanguage}. Preserve the meaning and context accurately. If the text is already in ${targetLanguage}, just return it as is. Only return the translated text without any additional commentary or explanations.\n\nText to translate:\n${extractedText}`;
-
-      const translationResult = await textModel.generateContent(translationPrompt);
-      const translatedText = translationResult.response.text();
+      const translatedText = await translateWithGemini(extractedText, targetLanguage);
 
       return NextResponse.json(
         {
