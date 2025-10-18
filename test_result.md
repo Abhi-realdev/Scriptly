@@ -107,39 +107,48 @@ user_problem_statement: "Build Scriptly - a web app for uploading images contain
 backend:
   - task: "Gemini Vision API integration for OCR"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/app/api/[[...path]]/route.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Implemented POST /api/extract-translate endpoint using Gemini Vision model (gemini-1.5-flash) with Emergent LLM Key. Endpoint accepts FormData with image file and targetLanguage. OCR prompt specifically asks for Indian regional language extraction."
+      - working: false
+        agent: "testing"
+        comment: "CRITICAL ISSUE: API key format is invalid. Current key 'sk-emergent-9B57c06574f5073745' is not valid for Google Gemini API. Gemini API keys must start with 'AIza' prefix, not 'sk-emergent'. All OCR tests failed with 400 Bad Request - API key not valid. The endpoint structure and implementation are correct, but authentication fails due to wrong API key format."
   
   - task: "Gemini Translation API"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/app/api/[[...path]]/route.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Implemented translation logic using Gemini text model (gemini-1.5-flash). After OCR extraction, the text is translated to Hindi or English based on user selection."
+      - working: false
+        agent: "testing"
+        comment: "CRITICAL ISSUE: Same API key authentication problem affects translation. Cannot test translation functionality because OCR step fails first due to invalid API key format. Translation logic appears correctly implemented but blocked by authentication issue."
   
   - task: "API health check endpoint"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/app/api/[[...path]]/route.js"
     stuck_count: 0
     priority: "low"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Implemented GET /api endpoint that returns status check response."
+      - working: true
+        agent: "testing"
+        comment: "Health check endpoint working correctly. Returns proper JSON response with status 'ok' and message 'Scriptly API is running'. No authentication required for this endpoint."
 
 frontend:
   - task: "Image upload with drag & drop"
