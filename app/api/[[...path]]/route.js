@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
+<<<<<<< HEAD
 import { analyzeImageWithGemini, translateWithGemini } from '@/lib/gemini';
+=======
+>>>>>>> f0a5e046e3282535dda0ece2283513ef1850a360
 
 // Handle CORS
 const corsHeaders = {
@@ -8,6 +11,11 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
 
+<<<<<<< HEAD
+=======
+const PYTHON_API_URL = 'http://localhost:8000';
+
+>>>>>>> f0a5e046e3282535dda0ece2283513ef1850a360
 export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
@@ -33,6 +41,7 @@ export async function POST(request) {
       // Convert image to base64
       const imageBuffer = await imageFile.arrayBuffer();
       const base64Image = Buffer.from(imageBuffer).toString('base64');
+<<<<<<< HEAD
       const mimeType = imageFile.type || 'image/jpeg';
 
       // Extract text using Gemini Vision API
@@ -56,6 +65,37 @@ export async function POST(request) {
           extractedText: extractedText.trim(),
           translatedText: translatedText.trim(),
           targetLanguage: targetLanguage,
+=======
+
+      // Call Python Gemini service
+      const ocrPrompt = `Extract all text from this image. The image may contain text in Indian regional languages like Odia, Bengali, Tamil, Telugu, Malayalam, Kannada, Gujarati, Marathi, or other languages. Please extract ALL text exactly as it appears in the image, maintaining the original language. Return only the extracted text without any additional commentary.`;
+
+      const response = await fetch(`${PYTHON_API_URL}/ocr-translate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          image_base64: base64Image,
+          prompt: ocrPrompt,
+          target_language: targetLanguage,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }));
+        throw new Error(errorData.detail || 'Failed to process image');
+      }
+
+      const data = await response.json();
+
+      return NextResponse.json(
+        {
+          success: data.success,
+          extractedText: data.extractedText,
+          translatedText: data.translatedText,
+          targetLanguage: data.targetLanguage,
+>>>>>>> f0a5e046e3282535dda0ece2283513ef1850a360
         },
         { headers: corsHeaders }
       );

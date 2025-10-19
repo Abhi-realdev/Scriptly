@@ -3,7 +3,11 @@
     "version": "0.1.0",
     "private": true,
     "scripts": {
+<<<<<<< HEAD
         "dev": "cross-env NODE_OPTIONS=--max-old-space-size=512 next dev --hostname 0.0.0.0 --port 3000",
+=======
+        "dev": "NODE_OPTIONS='--max-old-space-size=512' next dev --hostname 0.0.0.0 --port 3000",
+>>>>>>> f0a5e046e3282535dda0ece2283513ef1850a360
         "dev:no-reload": "next dev --hostname 0.0.0.0 --port 3000",
         "dev:webpack": "next dev --hostname 0.0.0.0 --port 3000",
         "build": "next build",
@@ -45,7 +49,10 @@
         "clsx": "^2.1.1",
         "cmdk": "^1.1.1",
         "date-fns": "^4.1.0",
+<<<<<<< HEAD
         "dotenv": "^17.2.3",
+=======
+>>>>>>> f0a5e046e3282535dda0ece2283513ef1850a360
         "embla-carousel-react": "^8.6.0",
         "input-otp": "^1.4.2",
         "lucide-react": "^0.516.0",
@@ -67,7 +74,10 @@
     },
     "devDependencies": {
         "autoprefixer": "^10.4.19",
+<<<<<<< HEAD
         "cross-env": "^10.1.0",
+=======
+>>>>>>> f0a5e046e3282535dda0ece2283513ef1850a360
         "globals": "^16.2.0",
         "postcss": "^8",
         "tailwindcss": "^3.4.1"
